@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing public handle, display name, and statistics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The Firebase Auth UID of the user" },
+        "username": { "type": "string", "description": "Unique username handle for searching and viewing results", "pattern": "^[a-zA-Z0-9_]{3,24}$" },
+        "displayName": { "type": "string", "description": "Full display name of user" },
+        "avatar": { "type": "string", "description": "Avatar seed or image url" },
+        "bio": { "type": "string", "description": "Short bio or study program description" },
+        "joinedAt": { "type": "string", "description": "Account creation timestamp" }
+      },
+      "required": ["uid", "username", "displayName", "joinedAt"]
+    },
+    "Result": {
+      "title": "Result",
+      "description": "An uploaded score or test/competition result",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique result identifier" },
+        "userId": { "type": "string", "description": "UID of the creator" },
+        "username": { "type": "string", "description": "Username of the creator for fast lookup" },
+        "displayName": { "type": "string", "description": "Display name of the author" },
+        "title": { "type": "string", "description": "Subject, course, test or activity name" },
+        "category": { "type": "string", "description": "Result category (Exam, Quiz, Certification, Gaming, Fitness, Project)" },
+        "score": { "type": "number", "description": "Score attained" },
+        "maxScore": { "type": "number", "description": "Maximum possible score" },
+        "percentage": { "type": "number", "description": "Calculated percentage 0-100" },
+        "grade": { "type": "string", "description": "Letter grade or distinction (e.g. A+, Distinction)" },
+        "date": { "type": "string", "description": "Date or academic term" },
+        "notes": { "type": "string", "description": "Optional notes or study reflections" },
+        "proofUrl": { "type": "string", "description": "Optional image or certificate snapshot url" },
+        "tags": { "type": "string", "description": "Comma-separated or tag label" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["id", "userId", "username", "displayName", "title", "category", "score", "maxScore", "percentage", "grade", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Peer comments and kudos on a result",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique comment identifier" },
+        "resultId": { "type": "string", "description": "Target result ID" },
+        "userId": { "type": "string", "description": "UID of commenter" },
+        "username": { "type": "string", "description": "Username of commenter" },
+        "displayName": { "type": "string", "description": "Display name of commenter" },
+        "text": { "type": "string", "description": "Comment content" },
+        "createdAt": { "type": "string", "description": "Timestamp" }
+      },
+      "required": ["id", "resultId", "userId", "username", "displayName", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile indexed by Auth UID"
+    },
+    "/results/{resultId}": {
+      "schema": "Result",
+      "description": "Collection of uploaded results viewable by friends and searchable by username"
+    },
+    "/results/{resultId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Peer feedback and congratulations on an uploaded result"
+    }
+  }
+}

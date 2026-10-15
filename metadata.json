@@ -1,0 +1,6 @@
+{
+  "name": "ScorePeer - Social Result & Score Hub",
+  "description": "Upload academic, exam, fitness, and project results and view, compare, and celebrate each other's achievements by username.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
