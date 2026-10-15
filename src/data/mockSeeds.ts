@@ -1,4 +1,4 @@
-import { ResultItem, UserProfile } from '../types';
+import { ResultItem, UserProfile, ReelItem } from '../types';
 
 export const INITIAL_PROFILES: UserProfile[] = [
   {
@@ -147,5 +147,64 @@ export const INITIAL_RESULTS: ResultItem[] = [
     notes: 'Passed on first attempt. High marks in VPC networking and S3 security architectures.',
     tags: 'Cloud, AWS, Certification',
     createdAt: '2026-10-03T17:00:00Z',
+  },
+];
+
+export const INITIAL_REELS: ReelItem[] = [
+  {
+    id: 'reel_1',
+    userId: 'demo_user_alex',
+    username: 'alex_lee',
+    displayName: 'Alex Lee',
+    avatar: '👨‍💻',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    caption: 'My study routine that helped me get 96% on Algorithms Final! Consistency over cramming 🚀',
+    tags: '#studywithme #algorithms #finals #csmajor',
+    audioTrack: 'Lofi Beats for Coding · Alex Lee',
+    likes: 42,
+    commentsCount: 6,
+    createdAt: '2026-10-14T15:00:00Z',
+  },
+  {
+    id: 'reel_2',
+    userId: 'demo_user_maya',
+    username: 'maya_chen',
+    displayName: 'Maya Chen',
+    avatar: '👩‍🔬',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    caption: 'Post-exam 5K run through the campus forest trail! Clearing the mind after organic chemistry 🍂',
+    tags: '#running #campuslife #fitness #pr',
+    audioTrack: 'Morning Pace · Acoustic Energy',
+    likes: 38,
+    commentsCount: 4,
+    createdAt: '2026-10-13T10:30:00Z',
+  },
+  {
+    id: 'reel_3',
+    userId: 'demo_user_jordan',
+    username: 'jordan_k',
+    displayName: 'Jordan Kim',
+    avatar: '⚡',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    caption: 'Building our autonomous rover for the semester robotics challenge! Sensor test bench live 🤖',
+    tags: '#robotics #engineering #hardware #tech',
+    audioTrack: 'Synthwave Dreams · Jordan K',
+    likes: 56,
+    commentsCount: 9,
+    createdAt: '2026-10-12T19:20:00Z',
+  },
+  {
+    id: 'reel_4',
+    userId: 'demo_user_sarah',
+    username: 'sarah_w',
+    displayName: 'Sarah Walker',
+    avatar: '🎨',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
+    caption: 'Designing the typography hierarchy for our new peer app! 60-30-10 color rule in action ✨',
+    tags: '#uiux #design #typography #studentlife',
+    audioTrack: 'Chillhop Study Session',
+    likes: 29,
+    commentsCount: 3,
+    createdAt: '2026-10-11T12:00:00Z',
   },
 ];

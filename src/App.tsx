@@ -3,9 +3,13 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { TopBar, NavTab } from './components/TopBar';
 import { FeedView } from './components/FeedView';
 import { SearchByUsername } from './components/SearchByUsername';
+import { ReelsView } from './components/ReelsView';
+import { ChatView } from './components/ChatView';
 import { LeaderboardView } from './components/LeaderboardView';
 import { CompareView } from './components/CompareView';
 import { UploadResultModal } from './components/UploadResultModal';
+import { UploadReelModal } from './components/UploadReelModal';
+import { AuthModal } from './components/AuthModal';
 import { ProfileModal } from './components/ProfileModal';
 import { ResultItem } from './types';
 import { subscribeToResults } from './services/resultService';
@@ -17,16 +21,24 @@ function MainContent() {
   const [results, setResults] = useState<ResultItem[]>(INITIAL_RESULTS);
   const [selectedUserForSearch, setSelectedUserForSearch] = useState<string>('');
   const [selectedUserForCompare, setSelectedUserForCompare] = useState<string>('');
+  const [selectedUserForChat, setSelectedUserForChat] = useState<string>('');
+  
+  // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState<boolean>(false);
+  const [isUploadReelOpen, setIsUploadReelOpen] = useState<boolean>(false);
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 
   // Check URL query params for ?user= handle on initial mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const userParam = params.get('user');
+    const tabParam = params.get('tab') as NavTab | null;
     if (userParam) {
       setSelectedUserForSearch(userParam);
       setActiveTab('search');
+    } else if (tabParam && ['feed', 'search', 'reels', 'chat', 'leaderboard', 'compare'].includes(tabParam)) {
+      setActiveTab(tabParam);
     }
   }, []);
 
@@ -50,6 +62,12 @@ function MainContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleStartChat = (username: string) => {
+    setSelectedUserForChat(username);
+    setActiveTab('chat');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <TopBar
@@ -59,7 +77,9 @@ function MainContent() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onOpenUpload={() => setIsUploadOpen(true)}
+        onOpenUploadReel={() => setIsUploadReelOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -78,6 +98,21 @@ function MainContent() {
             allResults={results}
             onCompareWithUser={handleCompareClick}
             onOpenUpload={() => setIsUploadOpen(true)}
+            onStartChat={handleStartChat}
+          />
+        )}
+
+        {activeTab === 'reels' && (
+          <ReelsView
+            onOpenUploadReel={() => setIsUploadReelOpen(true)}
+            onUsernameClick={handleUsernameClick}
+          />
+        )}
+
+        {activeTab === 'chat' && (
+          <ChatView
+            initialChatFriend={selectedUserForChat}
+            onViewResults={handleUsernameClick}
           />
         )}
 
@@ -104,7 +139,7 @@ function MainContent() {
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-900">ScorePeer</span>
             <span aria-hidden="true">·</span>
-            <span>Peer Result &amp; Academic Sharing Platform</span>
+            <span>Social Results, Chat &amp; Reels</span>
           </div>
 
           <div className="flex items-center gap-4 text-xs text-slate-600">
@@ -115,7 +150,19 @@ function MainContent() {
               }}
               className="hover:text-slate-900 transition-colors"
             >
-              Browse Friends
+              Find Friends
+            </button>
+            <button
+              onClick={() => setActiveTab('reels')}
+              className="hover:text-slate-900 transition-colors"
+            >
+              Reels
+            </button>
+            <button
+              onClick={() => setActiveTab('chat')}
+              className="hover:text-slate-900 transition-colors"
+            >
+              Chat
             </button>
             <button
               onClick={() => setIsUploadOpen(true)}
@@ -124,10 +171,10 @@ function MainContent() {
               Post Result
             </button>
             <button
-              onClick={() => setIsProfileOpen(true)}
+              onClick={() => setIsAuthOpen(true)}
               className="hover:text-slate-900 transition-colors font-mono"
             >
-              @{profile?.username || 'profile'}
+              {profile?.email ? `@${profile.username}` : 'Sign Up / Log In'}
             </button>
           </div>
         </div>
@@ -137,9 +184,18 @@ function MainContent() {
       <UploadResultModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
-        onSuccess={() => {
-          // Toast or auto refresh feed
-        }}
+        onSuccess={() => {}}
+      />
+
+      <UploadReelModal
+        isOpen={isUploadReelOpen}
+        onClose={() => setIsUploadReelOpen(false)}
+        onSuccess={() => setActiveTab('reels')}
+      />
+
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
       />
 
       <ProfileModal

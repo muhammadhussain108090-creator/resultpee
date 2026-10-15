@@ -14,6 +14,7 @@ export interface UserProfile {
   displayName: string;
   avatar: string;
   bio?: string;
+  email?: string;
   joinedAt: string;
 }
 
@@ -45,21 +46,46 @@ export interface CommentItem {
   createdAt: string;
 }
 
-export interface FriendComparisonData {
-  user1: {
-    username: string;
-    displayName: string;
-    results: ResultItem[];
-    avgPercentage: number;
-    highestScore: number;
-    totalPassed: number;
-  };
-  user2: {
-    username: string;
-    displayName: string;
-    results: ResultItem[];
-    avgPercentage: number;
-    highestScore: number;
-    totalPassed: number;
-  };
+export interface FriendItem {
+  friendUid: string;
+  username: string;
+  displayName: string;
+  avatar: string;
+  addedAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  chatId: string;
+  senderUid: string;
+  senderUsername: string;
+  senderDisplayName: string;
+  senderAvatar?: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface ReelItem {
+  id: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  avatar: string;
+  videoUrl: string;
+  caption: string;
+  tags?: string;
+  audioTrack?: string;
+  likes: number;
+  commentsCount?: number;
+  createdAt: string;
+}
+
+export interface ReelComment {
+  id: string;
+  reelId: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  text: string;
+  createdAt: string;
 }

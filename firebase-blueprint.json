@@ -51,12 +51,79 @@
         "createdAt": { "type": "string", "description": "Timestamp" }
       },
       "required": ["id", "resultId", "userId", "username", "displayName", "text", "createdAt"]
+    },
+    "Friendship": {
+      "title": "Friendship",
+      "description": "Friend connection record stored under a user profile",
+      "type": "object",
+      "properties": {
+        "friendUid": { "type": "string", "description": "UID of the friend" },
+        "username": { "type": "string", "description": "Friend username" },
+        "displayName": { "type": "string", "description": "Friend display name" },
+        "avatar": { "type": "string", "description": "Friend avatar" },
+        "addedAt": { "type": "string", "description": "Friend connection timestamp" }
+      },
+      "required": ["friendUid", "username", "displayName", "addedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "A direct or room message between peers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique message identifier" },
+        "chatId": { "type": "string", "description": "Direct chat key or channel identifier" },
+        "senderUid": { "type": "string", "description": "UID of sender" },
+        "senderUsername": { "type": "string", "description": "Username of sender" },
+        "senderDisplayName": { "type": "string", "description": "Display name of sender" },
+        "senderAvatar": { "type": "string", "description": "Sender avatar" },
+        "text": { "type": "string", "description": "Message text content" },
+        "createdAt": { "type": "string", "description": "Message timestamp" }
+      },
+      "required": ["id", "chatId", "senderUid", "senderUsername", "senderDisplayName", "text", "createdAt"]
+    },
+    "Reel": {
+      "title": "Reel",
+      "description": "Short vertical video clip shared with friends",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique reel identifier" },
+        "userId": { "type": "string", "description": "Creator user UID" },
+        "username": { "type": "string", "description": "Creator username" },
+        "displayName": { "type": "string", "description": "Creator display name" },
+        "avatar": { "type": "string", "description": "Creator avatar" },
+        "videoUrl": { "type": "string", "description": "Video file URL, blob URL, or animated video asset" },
+        "caption": { "type": "string", "description": "Reel caption / title" },
+        "tags": { "type": "string", "description": "Hashtags and subject tags" },
+        "audioTrack": { "type": "string", "description": "Sound or music title" },
+        "likes": { "type": "number", "description": "Count of likes" },
+        "createdAt": { "type": "string", "description": "Reel publication timestamp" }
+      },
+      "required": ["id", "userId", "username", "displayName", "videoUrl", "caption", "createdAt"]
+    },
+    "ReelComment": {
+      "title": "ReelComment",
+      "description": "Comment on a short vertical reel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Comment identifier" },
+        "reelId": { "type": "string", "description": "Parent reel ID" },
+        "userId": { "type": "string", "description": "UID of commenter" },
+        "username": { "type": "string", "description": "Username of commenter" },
+        "displayName": { "type": "string", "description": "Display name of commenter" },
+        "text": { "type": "string", "description": "Comment text" },
+        "createdAt": { "type": "string", "description": "Timestamp" }
+      },
+      "required": ["id", "reelId", "userId", "username", "displayName", "text", "createdAt"]
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "User profile indexed by Auth UID"
+    },
+    "/users/{userId}/friends/{friendId}": {
+      "schema": "Friendship",
+      "description": "Friend list connections for this user"
     },
     "/results/{resultId}": {
       "schema": "Result",
@@ -65,6 +132,18 @@
     "/results/{resultId}/comments/{commentId}": {
       "schema": "Comment",
       "description": "Peer feedback and congratulations on an uploaded result"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Peer chat messages between friends"
+    },
+    "/reels/{reelId}": {
+      "schema": "Reel",
+      "description": "Vertical short video reels uploaded by friends"
+    },
+    "/reels/{reelId}/comments/{commentId}": {
+      "schema": "ReelComment",
+      "description": "Comments on video reels"
     }
   }
 }

@@ -1,8 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, UserCheck, TrendingUp, Award, BookOpen, Share2, ArrowRight, UserPlus, Users } from 'lucide-react';
+import { 
+  Search, 
+  UserCheck, 
+  TrendingUp, 
+  Award, 
+  BookOpen, 
+  Share2, 
+  ArrowRight, 
+  UserPlus, 
+  Users, 
+  MessageSquare 
+} from 'lucide-react';
 import { ResultItem, UserProfile } from '../types';
 import { ResultCard } from './ResultCard';
-import { getAllUsernames, getUserProfileByUsername, getResultsByUsername } from '../services/resultService';
+import { getAllUsernames, getUserProfileByUsername } from '../services/resultService';
 import { useAuth } from '../context/AuthContext';
 
 interface SearchByUsernameProps {
@@ -10,6 +21,7 @@ interface SearchByUsernameProps {
   allResults: ResultItem[];
   onCompareWithUser: (username: string) => void;
   onOpenUpload: () => void;
+  onStartChat: (username: string) => void;
 }
 
 export const SearchByUsername: React.FC<SearchByUsernameProps> = ({
@@ -17,13 +29,15 @@ export const SearchByUsername: React.FC<SearchByUsernameProps> = ({
   allResults,
   onCompareWithUser,
   onOpenUpload,
+  onStartChat,
 }) => {
-  const { profile: currentProfile } = useAuth();
+  const { profile: currentProfile, toggleFriend, isFriend } = useAuth();
   const [searchInput, setSearchInput] = useState<string>(initialUsername);
   const [selectedUsername, setSelectedUsername] = useState<string>(initialUsername);
-  const [friendProfiles, setFriendProfiles] = useState<{ username: string; displayName: string; avatar: string }[]>([]);
+  const [friendProfiles, setFriendProfiles] = useState<{ username: string; displayName: string; avatar: string; uid?: string }[]>([]);
   const [targetProfile, setTargetProfile] = useState<UserProfile | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [directoryFilter, setDirectoryFilter] = useState<'all' | 'friends'>('all');
   const [copied, setCopied] = useState<boolean>(false);
 
   // Load registered usernames
@@ -99,7 +113,18 @@ export const SearchByUsername: React.FC<SearchByUsernameProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const targetUid = targetProfile?.uid || (selectedUsername ? 'demo_user_' + selectedUsername : '');
+  const userIsFriend = selectedUsername ? isFriend(targetUid) || isFriend(selectedUsername) : false;
+
   const categories = ['All', 'Academic Exam', 'Quiz & Test', 'Course & Cert', 'Coding', 'Fitness & Sports', 'Project'];
+
+  // Filtered friends directory
+  const displayedDirectory = useMemo(() => {
+    if (directoryFilter === 'friends') {
+      return friendProfiles.filter((f) => isFriend(f.uid || '') || isFriend(f.username));
+    }
+    return friendProfiles;
+  }, [friendProfiles, directoryFilter, isFriend]);
 
   return (
     <div className="space-y-8">
@@ -180,21 +205,62 @@ export const SearchByUsername: React.FC<SearchByUsernameProps> = ({
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3">
+              {/* Action Buttons: Add Friend, Chat, Compare */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {currentProfile?.username.toLowerCase() !== selectedUsername.toLowerCase() && (
+                  <>
+                    <button
+                      onClick={() =>
+                        toggleFriend({
+                          uid: targetUid,
+                          username: selectedUsername,
+                          displayName: targetProfile?.displayName || selectedUsername,
+                          avatar: targetProfile?.avatar || '👤',
+                        })
+                      }
+                      className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs ${
+                        userIsFriend
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      {userIsFriend ? (
+                        <>
+                          <UserCheck className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Friends</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3.5 h-3.5" />
+                          <span>Add Friend</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => onStartChat(selectedUsername)}
+                      className="px-3.5 py-2 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1.5 shadow-xs"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Chat</span>
+                    </button>
+                  </>
+                )}
+
                 <button
                   onClick={() => onCompareWithUser(selectedUsername)}
-                  className="px-4 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-3.5 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Users className="w-3.5 h-3.5" />
-                  <span>Compare with My Results</span>
+                  <span>Compare</span>
                 </button>
+
                 <button
                   onClick={handleShareProfile}
                   className="px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Share2 className="w-3.5 h-3.5" />
-                  <span>{copied ? 'Copied' : 'Share Profile'}</span>
+                  <span>{copied ? 'Copied' : 'Share'}</span>
                 </button>
               </div>
             </div>
@@ -262,7 +328,7 @@ export const SearchByUsername: React.FC<SearchByUsernameProps> = ({
                 <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
                   {selectedUsername === currentProfile?.username
                     ? 'You have not uploaded a result in this category yet.'
-                    : `Ask @${selectedUsername} to share their latest exam or score!`}
+                    : `Ask @${selectedUsername} to share their latest score or reel!`}
                 </p>
                 {selectedUsername === currentProfile?.username && (
                   <button
@@ -287,47 +353,98 @@ export const SearchByUsername: React.FC<SearchByUsernameProps> = ({
           </div>
         </div>
       ) : (
-        /* Friends Directory Overview when no single username is searched */
+        /* Friends Directory Overview */
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900">
-              Friend Directory ({friendProfiles.length} Members)
-            </h3>
-            <span className="text-xs text-slate-500">
-              Select any friend to view their full results
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-slate-900">
+                Friend Directory ({displayedDirectory.length} Members)
+              </h3>
+              <span className="text-xs text-slate-500">
+                Select any friend to view their full results, start a chat, or add to friends
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg self-start sm:self-auto">
+              <button
+                onClick={() => setDirectoryFilter('all')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+                  directoryFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All Peers
+              </button>
+              <button
+                onClick={() => setDirectoryFilter('friends')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+                  directoryFilter === 'friends' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                My Added Friends
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {friendProfiles.map((friend) => {
+            {displayedDirectory.map((friend) => {
               const friendResults = allResults.filter(
                 (r) => r.username.toLowerCase() === friend.username.toLowerCase()
               );
               const avg = friendResults.length > 0
                 ? (friendResults.reduce((sum, r) => sum + r.percentage, 0) / friendResults.length).toFixed(1)
                 : '0.0';
+              const isAdded = isFriend(friend.uid || '') || isFriend(friend.username);
 
               return (
-                <button
+                <div
                   key={friend.username}
-                  onClick={() => handleSelectUser(friend.username)}
-                  className="bg-white border border-slate-200 hover:border-slate-400 p-5 rounded-xl text-left transition-all hover:shadow-xs group"
+                  className="bg-white border border-slate-200 hover:border-slate-300 p-5 rounded-xl text-left transition-all hover:shadow-xs group flex flex-col justify-between"
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-2xl w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                      {friend.avatar}
-                    </span>
-                    <div className="min-w-0 flex-1">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        onClick={() => handleSelectUser(friend.username)}
+                        className="text-2xl w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:scale-105 transition-transform"
+                      >
+                        {friend.avatar}
+                      </button>
+
+                      {currentProfile?.username.toLowerCase() !== friend.username.toLowerCase() && (
+                        <button
+                          onClick={() =>
+                            toggleFriend({
+                              uid: friend.uid || 'demo_user_' + friend.username,
+                              username: friend.username,
+                              displayName: friend.displayName,
+                              avatar: friend.avatar,
+                            })
+                          }
+                          className={`p-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            isAdded
+                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                          title={isAdded ? 'Remove from Friends' : 'Add Friend'}
+                        >
+                          {isAdded ? <UserCheck className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => handleSelectUser(friend.username)}
+                      className="text-left w-full"
+                    >
                       <h4 className="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                         {friend.displayName}
                       </h4>
                       <p className="text-xs font-mono text-slate-500 truncate">
                         @{friend.username}
                       </p>
-                    </div>
+                    </button>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                     <span className="text-slate-500">
                       {friendResults.length} {friendResults.length === 1 ? 'Result' : 'Results'}
                     </span>
@@ -335,7 +452,7 @@ export const SearchByUsername: React.FC<SearchByUsernameProps> = ({
                       Avg {avg}%
                     </span>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>

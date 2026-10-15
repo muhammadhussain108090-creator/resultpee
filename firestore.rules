@@ -33,7 +33,7 @@ service cloud.firestore {
              data.score is number &&
              data.maxScore is number && data.maxScore > 0 &&
              data.percentage is number &&
-             data.grade is string && data.grade.size() >= 1 && data.grade.size() <= 30 &&
+             data.grade is string && data.grade.size() >= 1 && data.grade.size() <= 40 &&
              data.createdAt is string;
     }
 
@@ -44,12 +44,31 @@ service cloud.firestore {
              data.createdAt is string;
     }
 
-    // User profiles
+    function isValidReel(data) {
+      return data.keys().hasAll(['id', 'userId', 'username', 'displayName', 'videoUrl', 'caption', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.caption is string && data.caption.size() <= 500 &&
+             data.createdAt is string;
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll(['id', 'chatId', 'senderUid', 'senderUsername', 'senderDisplayName', 'text', 'createdAt']) &&
+             data.senderUid == request.auth.uid &&
+             data.text is string && data.text.size() >= 1 && data.text.size() <= 1000 &&
+             data.createdAt is string;
+    }
+
+    // User profiles & friends subcollection
     match /users/{userId} {
       allow read: if true;
       allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
       allow update: if isOwner(userId) && isValidUserProfile(request.resource.data);
       allow delete: if isOwner(userId);
+
+      match /friends/{friendId} {
+        allow read: if true;
+        allow write: if isOwner(userId);
+      }
     }
 
     // Results collection
@@ -64,6 +83,28 @@ service cloud.firestore {
         allow read: if true;
         allow create: if isAuthenticated() && isValidId(commentId) && isValidComment(request.resource.data);
         allow update: if false;
+        allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      }
+    }
+
+    // Chat messages
+    match /chats/{chatId}/messages/{messageId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidId(messageId) && isValidChatMessage(request.resource.data);
+      allow update: if false;
+      allow delete: if isAuthenticated() && resource.data.senderUid == request.auth.uid;
+    }
+
+    // Reels collection
+    match /reels/{reelId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isValidId(reelId) && isValidReel(request.resource.data);
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && isValidId(commentId);
         allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
       }
     }
